@@ -43,7 +43,7 @@ void BuffManager::activatePowerUp(PowerUp& powerUp,Ball& ball, Player& player, P
 {
 	switch (powerUp.m_type)
 	{
-	case SPEED:		player.velocity *= 1.2;	break;	//????生成疾风效果
+	case SPEED:		player.velocity *= 1.2f;	break;	//????生成疾风效果
 	case STICKY:	ball.isStuck = GL_TRUE;	break;
 	case PAD_SIZE_INCREASE:	player.size.x += 50;	break;
 	case PASS_THROUGH:	this->t_pass_through += T_PASS_THROUGH;	//增加时间

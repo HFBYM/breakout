@@ -93,6 +93,7 @@ int main()
 	glfwTerminate();
 	return 0;
 }
+//常量全大写 结构体、类名开头全大写 变量下划线 函数名驼峰
 //[]对应private成员 ()对应operator()的形参列表 mutable，对应const属性
 //<>包含的是不在项目中的文件 ""包含的是在项目中的文件 dll是动态运行库 要放在当前项目exe文件旁 lib是静态库在设置里链接
 

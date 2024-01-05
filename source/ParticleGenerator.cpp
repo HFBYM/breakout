@@ -15,7 +15,7 @@ void ParticleGenerator::update(GLfloat dt, Object& object, GLuint newParticles, 
 		if (particle.life > 0.0f)
 		{
 			particle.pos += particle.velocity * dt;
-			particle.color.w -= dt * 2.5;	//颜色透明度衰减的速度快于生命
+			particle.color.w -= dt * 2.5f;	//颜色透明度衰减的速度快于生命
 		}
 	}
 }
@@ -87,7 +87,7 @@ GLuint ParticleGenerator::firstUnusedParticle()
 void ParticleGenerator::respawn(Particle& particle, Object& object, glm::vec2 offset)
 {
 	GLfloat random = ((rand()) % 100 - 50) / 10.0f;	//-5到5的小数
-	GLfloat rcolor = 3.5 + rand() % 100 / 100.0f;	//3.5到4.5
+	GLfloat rcolor = 3.5f + rand() % 100 / 100.0f;	//3.5到4.5
 	particle.pos = object.pos + offset + random;	//生成在物体周围
 	particle.color = glm::vec4(rcolor, rcolor, rcolor, 1.0f);	//使颜色随机强度
 	particle.life = 1.0f;	//重置生命

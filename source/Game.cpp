@@ -254,7 +254,8 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 	if (ball->pos.y >= this->init_screen_height)
 	{
 		this->resetLevel();
-		player->reset(ball->isStuck,this->init_screen_width,this->init_screen_height);
+		player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
+			static_cast<GLfloat>(this->init_screen_height));
 		buff_manager->reset(*post_processor,ball->color);
 	}
 	particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	//一次激活两个 offset让粒子在球里面出现
