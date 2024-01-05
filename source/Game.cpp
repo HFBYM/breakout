@@ -5,22 +5,26 @@
 #include"ParticleGenerator.h"
 #include"PostProcess.h"
 #include"Player.h"
+#include<irrKlang/include/irrKlang.h>	//音乐库目录
+using namespace irrklang;		//使用命名空间
 using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
 SpriteRenderer* renderer;
 
-Player* player;		//???加个惯性系统
+Player* player;
 
 const glm::vec2 ball_velocity(200.0f, -450.0f);
 const GLfloat ball_radius(25.0f);
 Ball* ball;
 
-ParticleGenerator* particles;		//?????物体破碎时的粒子效果？？？？
+ParticleGenerator* particles;		//?????物体破碎时的粒子效果????
 
 BuffManager* buff_manager;
 
 PostProcessor* post_processor;
 GLfloat shake_time = 0.0f;
-Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	？？？不够准确
+
+ISoundEngine* sound_engine = createIrrKlangDevice();	//初始化声音引擎
+Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	???不够准确
 {
 	glm::vec2 compass[] = {
 		glm::vec2(0.0f,1.0f),	//y+	上
@@ -90,7 +94,7 @@ void Game::init()	//进行所有资源的导入
 
 	glm::mat4 proj = glm::ortho(0.0f, static_cast<GLfloat>(this->init_screen_width), 
 		static_cast<GLfloat>(this->init_screen_height), 0.0f, -1.0f, 1.0f);		
-	//正射投影即可 左上角是(0,0)与屏幕坐标对应	旋转中心在左上角？？？上下翻转？？
+	//正射投影即可 左上角是(0,0)与屏幕坐标对应	旋转中心在左上角???上下翻转??
 	ResourceManager::getShader("sprite").use().setInteger("image", 0);	//设定采样槽
 	ResourceManager::getShader("sprite").use().setMatrix4("proj", proj);	//设置正射投影
 
@@ -150,6 +154,8 @@ void Game::init()	//进行所有资源的导入
 		this->init_screen_width, this->init_screen_height);
 
 	buff_manager = new BuffManager;
+
+	sound_engine->play2D("resource/music/breakout.mp3", GL_TRUE);	//重复播放
 	Check();
 }
 void Game::doCollisions()
@@ -163,6 +169,7 @@ void Game::doCollisions()
 			{
 				if(!brick.isSolid)	//可摧毁的
 				{
+					sound_engine->play2D("resource/music/solid.wav", GL_FALSE);	//不重复播放
 					brick.destroyed = true;
 					buff_manager->spawnPowerUp(brick,this->levels[this->level].unit_size);	
 					//对每一个被摧毁的做一次生成判定
@@ -171,6 +178,7 @@ void Game::doCollisions()
 				}
 				else	//坚固的就抖动
 				{
+					sound_engine->play2D("resource/music/bleep.mp3", GL_FALSE);	//不重复播放
 					shake_time = 0.05f;
 					post_processor->shake = GL_TRUE;
 				}
@@ -203,6 +211,7 @@ void Game::doCollisions()
 	{
 		GLfloat distance = ball->pos.x + ball->radius - (player->pos.x + player->size.x / 2);
 		GLfloat percentage = distance / (player->size.x / 2);	//碰撞点距离中心的百分比	可以为负的
+		sound_engine->play2D("resource/music/bleep.wav", GL_FALSE);	//不重复播放
 
 		//速度更改
 		GLfloat strenghth = 2.0f;
@@ -215,6 +224,7 @@ void Game::doCollisions()
 		if (checkCollisions(*player, powerUp))	//挡板与道具相撞
 			{   
 			//激活道具
+			sound_engine->play2D("resource/music/powerup.wav", GL_FALSE);	//不重复播放
 			buff_manager->activatePowerUp(powerUp,*ball,*player,*post_processor);
 				powerUp.destroyed = GL_TRUE;
 			}
@@ -224,7 +234,8 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 {
 	if (this->state == GAME_ACTIVE)	//运行时
 	{
-		player->princessInput(dt, this->keys, this->init_screen_width, this->init_screen_height);
+		player->princessInput(dt, this->keys, static_cast<GLfloat>(this->init_screen_width),
+			static_cast<GLfloat>(this->init_screen_height));
 		if (this->keys[GLFW_KEY_SPACE])
 			ball->isStuck = false;
 		if (this->keys[GLFW_KEY_P])		//???调试使用

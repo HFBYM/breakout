@@ -22,7 +22,7 @@ void Level::load(const char* file, GLuint width, GLuint height)
 			tileData.push_back(row);
 		}
 		if (tileData.size())
-			this->init(tileData, width, height);	//使用指针？？？
+			this->init(tileData, width, height);	//使用指针???
 	}
 	else
 	{

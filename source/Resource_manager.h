@@ -4,7 +4,7 @@
 #include"Shader.h"
 #include"Texture.h"
 class ResourceManager //创建一个资源管理器，为纹理和着色器等导入文件 是一个静态单一实例的类 全过程可使用
-{
+{					//给定一个文件夹 自动导入所有文件?????
 public:
 	//存储
 	static std::map<std::string, Shader> shaders;

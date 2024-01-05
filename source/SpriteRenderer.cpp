@@ -31,7 +31,7 @@ void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 pos, glm::vec2 siz
 }
 void SpriteRenderer::initRenderData()
 {
-    GLfloat vertices[] = {          //???可用元素索引简化？？？
+    GLfloat vertices[] = {          //???可用元素索引简化???
         // Pos      // Tex
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f,

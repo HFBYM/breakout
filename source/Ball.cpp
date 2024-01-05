@@ -12,7 +12,7 @@ glm::vec2 Ball::move(GLfloat dt, GLuint window_width,glm::vec2 pos)
 {
 	if (!this->isStuck)	//不固定的时候才可以移动
 	{
-		this->pos += this->velocity * dt;	//与键盘输入不同 设计惯性？？？
+		this->pos += this->velocity * dt;	//与键盘输入不同 设计惯性???
 		if (this->pos.x <= 0.0f)
 		{
 			this->pos.x = 0.0f;
