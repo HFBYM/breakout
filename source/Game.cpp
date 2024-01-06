@@ -6,6 +6,7 @@
 #include"PostProcess.h"
 #include"Player.h"
 #include<irrKlang/include/irrKlang.h>	//音乐库目录
+#include"TextRenderer.h"
 using namespace irrklang;		//使用命名空间
 using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
 SpriteRenderer* renderer;
@@ -24,6 +25,8 @@ PostProcessor* post_processor;
 GLfloat shake_time = 0.0f;
 
 ISoundEngine* sound_engine = createIrrKlangDevice();	//初始化声音引擎
+
+TextRenderer* text_renderer;
 Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	???不够准确
 {
 	glm::vec2 compass[] = {
@@ -76,7 +79,7 @@ Collision checkCollisions(Ball& one, Object& two)
 }
 
 Game::Game(GLuint width, GLuint height):state(GAME_ACTIVE),screen_width(width),screen_height(height),keys(),
-level(0),init_screen_width(width), init_screen_height(height)
+level(0),init_screen_width(width), init_screen_height(height),player_lives(3)	//不同关卡不同生命值???
 {
 	//可以空白初始化变量
 }
@@ -156,6 +159,9 @@ void Game::init()	//进行所有资源的导入
 	buff_manager = new BuffManager;
 
 	sound_engine->play2D("resource/music/breakout.mp3", GL_TRUE);	//重复播放
+
+	text_renderer = new TextRenderer(this->init_screen_width, this->init_screen_height);
+	text_renderer->load("C:/Windows/Fonts/ARIALNI.TTF", 24);	//导入绝对路径
 	Check();
 }
 void Game::doCollisions()
@@ -250,13 +256,19 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 	buff_manager->updatePowerUp(dt, *post_processor, static_cast<GLfloat>(this->init_screen_height),ball->color);
 	//检查碰撞
 	this->doCollisions();
-	//检查是否失败
+	//检查是否碰到底边
 	if (ball->pos.y >= this->init_screen_height)
 	{
-		this->resetLevel();
-		player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-			static_cast<GLfloat>(this->init_screen_height));
-		buff_manager->reset(*post_processor,ball->color);
+		ball->isStuck = GL_TRUE;
+		if (this->player_lives > 0)
+			this->player_lives--;
+		else
+		{
+			this->resetLevel();
+			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
+				static_cast<GLfloat>(this->init_screen_height));
+			buff_manager->reset(*post_processor, ball->color);
+		}
 	}
 	particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	//一次激活两个 offset让粒子在球里面出现
 	if (shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
@@ -281,6 +293,7 @@ void Game::render()
 		particles->draw();		//画粒子在其他之后 在球之前 因为没有深度检测
 		ball->draw(*renderer);	//画球
 
+		text_renderer->renderText("Level 1", 10, 10, 5.0f);
 		post_processor->endRender();
 		post_processor->render(static_cast<GLfloat>(glfwGetTime()),this->screen_width,this->screen_height );	
 		//得到glfw运行的时间(s)为单位  用时间来实现后期效果

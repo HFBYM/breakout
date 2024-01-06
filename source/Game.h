@@ -25,6 +25,7 @@ public:
 	GLuint screen_width, screen_height;		//游戏后动态的分辨率
 	std::vector<Level> levels;	//游戏关卡
 	GLuint level;				//当前关卡
+	GLuint player_lives;		//玩家生命值
 	//析构与构造
 	Game(GLuint width, GLuint height);
 	~Game();
