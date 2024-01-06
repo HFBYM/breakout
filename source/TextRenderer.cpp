@@ -20,9 +20,8 @@ TextRenderer::TextRenderer(GLuint width, GLuint height)		///???更好的理解和实现
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
-void TextRenderer::load(std::string font, GLuint font_size)
+void TextRenderer::load(std::string font_file, GLuint font_size, std::string font_name)
 {
-	this->characters.clear();	//先清除先前的数据
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))	//初始化
 	{
@@ -30,13 +29,14 @@ void TextRenderer::load(std::string font, GLuint font_size)
 		__debugbreak();
 	}
 	FT_Face face;			//创建一个字体面
-	if (FT_New_Face(ft, font.c_str(), 0, &face))	//把字体导入字体面中
+	if (FT_New_Face(ft, font_file.c_str(), 0, &face))	//把字体导入字体面中
 	{
-		std::cout << "ERROR::FONT: failed to load font\t" << font << std::endl;
+		std::cout << "ERROR::FONT: failed to load font\t" << font_file << std::endl;
 		__debugbreak();
 	}
 	FT_Set_Pixel_Sizes(face, 0, font_size);	//将宽度值设为0表示我们要从字体面通过给定的高度中动态计算出字形的宽度。
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);	//禁用地址对齐 因为这个纹理一个颜色只有一个字节
+	std::map<char, Character> characters;
 	for (GLubyte c = 0; c < 128; c++)	//导入128个字符	
 	{
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER))	//从字符面里导入字符
@@ -58,24 +58,31 @@ void TextRenderer::load(std::string font, GLuint font_size)
 		Character character = { tex,glm::ivec2(face->glyph->bitmap.width,face->glyph->bitmap.rows),
 		glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top), 
 			static_cast<GLuint>(face->glyph->advance.x )};
-		//face的具体结构????
-		this->characters.insert(std::make_pair(c, character));
+		characters.insert(std::make_pair(c, character));
 	}
+	this->m_lib.insert(std::make_pair(font_name, characters));
 	glBindTexture(GL_TEXTURE_2D, 0);
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);	//freeType里面的数据都导出来了 可以删除
 }
-void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y,  
+	std::string font_name, glm::vec3 color, GLfloat scale)
 {
+	if (!this->m_lib.count(font_name))
+	{
+		std::cout << "ERROR::FONT: the name " << font_name << " hasn't been found" << std::endl;
+		__debugbreak();
+	}
 	this->text_shader.setVector3f("color", color, true);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(this->vao);
 
 	for (auto c : text)
 	{
-		Character ch = this->characters[c];		//调出对应的字符
-		GLfloat xpos = x + ch.bearing.x * scale;	//bearing.x是一个负值???
-		GLfloat ypos = y + (this->characters['H'].bearing.y - ch.bearing.y) * scale;
+		Character ch = this->m_lib[font_name][c];		//调出对应的字符
+		GLfloat xpos = x + ch.bearing.x * scale;	
+		//为了补偿字体纹理宽度和原图的区别 原图的原点排列在一起是最好的
+		GLfloat ypos = y + (this->m_lib[font_name]['H'].bearing.y - ch.bearing.y) * scale;
 		//因为H的高度为顶高，又从上往下渲染 所以来衡量每个字符的高度
 
 		GLfloat w = ch.size.x * scale;
@@ -97,7 +104,8 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		x += (ch.distance >> 6) * scale;	//???除以64 为什么
+		x += (ch.distance >> 6) * scale;	
+		//advance是下一个字型应在的位置 其存储方式决定需要除以64 
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);

@@ -6,7 +6,8 @@ enum GameState		//代表游戏当前状态
 {
 	GAME_ACTIVE,
 	GAME_MENU,
-	GAME_WIN
+	GAME_WIN,
+	GAME_DEFEAT
 };
 enum Direction
 {
@@ -25,7 +26,7 @@ public:
 	GLuint screen_width, screen_height;		//游戏后动态的分辨率
 	std::vector<Level> levels;	//游戏关卡
 	GLuint level;				//当前关卡
-	GLuint player_lives;		//玩家生命值
+	int player_lives;		//玩家生命值
 	//析构与构造
 	Game(GLuint width, GLuint height);
 	~Game();

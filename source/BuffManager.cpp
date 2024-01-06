@@ -133,9 +133,13 @@ void BuffManager::reset(PostProcessor& post_processor, glm::vec3& ball_color)
 		this->t_pass_through = 0;
 		ball_color = glm::vec3(1.0f);
 	}
-	for (PowerUp& powerUp : this->powerUps)
-	{
-		if (!powerUp.destroyed)
-			powerUp.destroyed = GL_TRUE;
-	}
+	//for (PowerUp& powerUp : this->powerUps)
+	//{
+	//	if (!powerUp.destroyed)
+	//		powerUp.destroyed = GL_TRUE;
+	//}
+}
+void BuffManager::clear()
+{
+	this->powerUps.clear(); 
 }

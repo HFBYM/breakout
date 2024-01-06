@@ -7,6 +7,8 @@
 #include"Player.h"
 #include<irrKlang/include/irrKlang.h>	//音乐库目录
 #include"TextRenderer.h"
+const GLuint init_lives = 1;
+
 using namespace irrklang;		//使用命名空间
 using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
 SpriteRenderer* renderer;
@@ -79,7 +81,7 @@ Collision checkCollisions(Ball& one, Object& two)
 }
 
 Game::Game(GLuint width, GLuint height):state(GAME_ACTIVE),screen_width(width),screen_height(height),keys(),
-level(0),init_screen_width(width), init_screen_height(height),player_lives(3)	//不同关卡不同生命值???
+level(0),init_screen_width(width), init_screen_height(height),player_lives(init_lives)	//不同关卡不同生命值???
 {
 	//可以空白初始化变量
 }
@@ -161,7 +163,8 @@ void Game::init()	//进行所有资源的导入
 	sound_engine->play2D("resource/music/breakout.mp3", GL_TRUE);	//重复播放
 
 	text_renderer = new TextRenderer(this->init_screen_width, this->init_screen_height);
-	text_renderer->load("C:/Windows/Fonts/ARIALNI.TTF", 24);	//导入绝对路径
+	text_renderer->load("resource/font/ARIALNI.TTF", 20, "medium");	//导入绝对路径arialbi.ttf
+	text_renderer->load("resource/font/arialbi.ttf", 40, "bold");	//用于标题
 	Check();
 }
 void Game::doCollisions()
@@ -247,44 +250,57 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 		if (this->keys[GLFW_KEY_P])		//???调试使用
 			__debugbreak();
 	}
-}
-void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
-{
-	//更新
-	ball->move(dt, this->init_screen_width, player->pos + glm::vec2(player->size.x / 2 - ball_radius, 
-		-2 * ball_radius));
-	buff_manager->updatePowerUp(dt, *post_processor, static_cast<GLfloat>(this->init_screen_height),ball->color);
-	//检查碰撞
-	this->doCollisions();
-	//检查是否碰到底边
-	if (ball->pos.y >= this->init_screen_height)
+	if (this->state == GAME_DEFEAT)
 	{
-		ball->isStuck = GL_TRUE;
-		if (this->player_lives > 0)
-			this->player_lives--;
-		else
+		if (this->keys[GLFW_KEY_ENTER])		//再来一次
 		{
+			buff_manager->clear();		//先清除之前的道具
 			this->resetLevel();
 			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
 				static_cast<GLfloat>(this->init_screen_height));
-			buff_manager->reset(*post_processor, ball->color);
+			ball->isStuck = GL_TRUE;
+			this->state = GAME_ACTIVE;
+			this->player_lives = init_lives;
 		}
 	}
-	particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	//一次激活两个 offset让粒子在球里面出现
-	if (shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
+}
+void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
+{
+	if(this->state==GAME_ACTIVE)
 	{
-		shake_time -= dt;	//1s失去1
-		if (shake_time <= 0.0f)		//放在里面防止多次设定
-			post_processor->shake = GL_FALSE;
+		//更新
+		ball->move(dt, this->init_screen_width, player->pos + glm::vec2(player->size.x / 2 - ball_radius,
+			-2 * ball_radius));
+		buff_manager->updatePowerUp(dt, *post_processor, static_cast<GLfloat>(this->init_screen_height), ball->color);
+		//检查碰撞
+		this->doCollisions();
+		//检查是否碰到底边
+		if (ball->pos.y >= this->init_screen_height)
+		{
+			this->player_lives--;
+			if (this->player_lives > 0)
+				ball->isStuck = GL_TRUE;
+			else		//失败
+			{
+				this->state = GAME_DEFEAT;
+				buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
+			}
+		}
+		particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	//一次激活两个 offset让粒子在球里面出现
+		if (shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
+		{
+			shake_time -= dt;	//1s失去1
+			if (shake_time <= 0.0f)		//放在里面防止多次设定
+				post_processor->shake = GL_FALSE;
+		}
 	}
 }
 void Game::render()
 {
 	Check();
+	post_processor->beginRender();
 	if (this->state == GAME_ACTIVE)
 	{
-		post_processor->beginRender();
-
 		renderer->drawSprite(ResourceManager::getTexture("background"), glm::vec2(0.0f, 0.0f)
 			, glm::vec2(this->init_screen_width, this->init_screen_height), 0.0f);	//背景
 		this->levels[this->level].draw(*renderer);	//关卡
@@ -293,11 +309,22 @@ void Game::render()
 		particles->draw();		//画粒子在其他之后 在球之前 因为没有深度检测
 		ball->draw(*renderer);	//画球
 
-		text_renderer->renderText("Level 1", 10, 10, 5.0f);
-		post_processor->endRender();
-		post_processor->render(static_cast<GLfloat>(glfwGetTime()),this->screen_width,this->screen_height );	
-		//得到glfw运行的时间(s)为单位  用时间来实现后期效果
+		text_renderer->renderText("Level 1", 0, 0, "medium");
 	}
+	if (this->state == GAME_DEFEAT)	//???渲染出背景模糊的效果
+	{
+		renderer->drawSprite(ResourceManager::getTexture("background"), glm::vec2(0.0f, 0.0f)
+			, glm::vec2(this->init_screen_width, this->init_screen_height), 0.0f);	//背景
+		this->levels[this->level].draw(*renderer);	//关卡
+		player->draw(*renderer);		//画挡板
+		buff_manager->draw(*renderer);	//画道具
+		particles->draw();		//画粒子在其他之后 在球之前 因为没有深度检测
+
+		text_renderer->renderText("DEFEATED!", 60, 160, "bold", glm::vec3(1.0f, 0.2f, 0.2f));
+	}
+	post_processor->endRender();
+	post_processor->render(static_cast<GLfloat>(glfwGetTime()),this->screen_width,this->screen_height );
+	//得到glfw运行的时间(s)为单位  用时间来实现后期效果
 	Check();
 }
 void Game::resetLevel()

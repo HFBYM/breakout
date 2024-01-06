@@ -20,4 +20,5 @@ public:
 	void updatePowerUp(GLfloat dt, PostProcessor& post_processor, GLfloat height, glm::vec3& ball_color);
 	void draw(SpriteRenderer& renderer);
 	void reset(PostProcessor& post_processor, glm::vec3& ball_color);
+	void clear();
 };
