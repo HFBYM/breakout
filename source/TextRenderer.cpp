@@ -19,6 +19,7 @@ TextRenderer::TextRenderer(GLuint width, GLuint height)		///???更好的理解和实现
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GL_FLOAT), nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
 }
 void TextRenderer::load(std::string font_file, GLuint font_size, std::string font_name)
 {
@@ -109,4 +110,75 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y,
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
+}
+void TextRenderer::renderText(std::string text, TextMethod& method, std::string font_name, 
+	glm::vec3 color, GLfloat scale)
+{
+	GLfloat x = method.xpos;
+	GLfloat y = method.ypos;
+	if (!this->m_lib.count(font_name))
+	{
+		std::cout << "ERROR::FONT: the name " << font_name << " hasn't been found" << std::endl;
+		__debugbreak();
+	}
+	this->text_shader.setVector3f("color", color, true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(this->vao);
+
+	for (auto c : text)
+	{
+		Character ch = this->m_lib[font_name][c];		//调出对应的字符
+		GLfloat xpos = x + ch.bearing.x * scale;
+		//为了补偿字体纹理宽度和原图的区别 原图的原点排列在一起是最好的
+		GLfloat ypos = y + (this->m_lib[font_name]['H'].bearing.y - ch.bearing.y) * scale;
+		//因为H的高度为顶高，又从上往下渲染 所以来衡量每个字符的高度
+
+		GLfloat w = ch.size.x * scale;
+		GLfloat h = ch.size.y * scale;
+
+		GLfloat vertices[] = {				//对每个字符动态的生成位置
+			xpos,	ypos + h,	0.0f,1.0f,
+			xpos + w,	ypos,	1.0f,0.0f,
+			xpos,	ypos,	0.0f,0.0f,
+
+			xpos,	ypos + h,	0.0f,1.0f,
+			xpos + w,	ypos + h,	1.0f,1.0f,
+			xpos + w,	ypos,	1.0f,0.0f
+		};
+		glBindTexture(GL_TEXTURE_2D, ch.tex);
+
+		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);	//动态的刷新缓冲
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		x += (ch.distance >> 6) * scale;
+		//advance是下一个字型应在的位置 其存储方式决定需要除以64 
+	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindVertexArray(0);
+
+}
+void TextRenderer::update(GLfloat dt)
+{
+	this->method_1.update(dt);
+}
+TextMethod_1::TextMethod_1()
+{
+	this->xpos = 0;
+	this->ypos = 100;
+	this->omiga = 4.5;
+	this->omiga = 30 / 180 * 3.14;		//????
+	this->time = 0.0f;
+}
+void TextMethod_1::update(GLfloat dt)
+{
+	if (this->omiga * this->time > 90)		//达到直角就停下
+	{
+		__debugbreak();
+		return;
+	}
+	this->time += dt;
+	this->xpos = 60 * glm::sin(this->omiga * time);
+	this->ypos = 160 - 60 * glm::cos(this->omiga * time);
 }

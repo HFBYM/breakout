@@ -1,5 +1,6 @@
 #pragma once
 #include<map>
+#include<vector>
 #include"Texture.h"
 #include"Shader.h"
 struct Character {
@@ -8,17 +9,37 @@ struct Character {
 	glm::ivec2 bearing;	//基准线到字型左/顶部的偏移值
 	GLuint distance;	//原点到下个字原点的距离
 };
-using char_lib = std::map<std::string, std::map<char, Character>>;
+using char_lib = std::map<std::string, std::map<char, Character>>;	//这个要放在类的后面
+class TextMethod
+{
+public:
+	GLfloat xpos;
+	GLfloat ypos;
+	glm::vec3 color;
+	void virtual update(GLfloat dt) = 0;	//一个纯虚函数用于继承
+};
+class TextMethod_1:public TextMethod		//专门给defeat用的运动轨迹
+{
+public:
+	TextMethod_1();
+	GLfloat omiga;		//旋转的角速度 单位是角度
+	GLfloat time;		//从零开始计时
+	void virtual update(GLfloat dt);
+};
 class TextRenderer
 {
 public:
 	char_lib m_lib;
 	Shader text_shader;		//专门给字体的着色器
+	TextMethod_1 method_1;
 
 	TextRenderer(GLuint width, GLuint height);
 	void load(std::string font_file, GLuint font_size, std::string font_name);
 	void renderText(std::string  text, GLfloat x, GLfloat y, std::string font_name,
 		glm::vec3 color = glm::vec3(1.0f), GLfloat scale = 3.0f);	//自主选择字体类型 放大倍数恒定更清晰
+	void renderText(std::string  text, TextMethod& method, std::string font_name,
+		glm::vec3 color = glm::vec3(1.0f), GLfloat scale = 3.0f);	//自主选择字体类型 放大倍数恒定更清晰
+	void update(GLfloat dt);
 private:
 	GLuint vao, vbo;
 };

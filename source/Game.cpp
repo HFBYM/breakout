@@ -294,6 +294,10 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 				post_processor->shake = GL_FALSE;
 		}
 	}
+	if (this->state == GAME_DEFEAT)
+	{
+		text_renderer->update(dt);
+	}
 }
 void Game::render()
 {
@@ -309,7 +313,7 @@ void Game::render()
 		particles->draw();		//画粒子在其他之后 在球之前 因为没有深度检测
 		ball->draw(*renderer);	//画球
 
-		text_renderer->renderText("Level 1", 0, 0, "medium");
+		text_renderer->renderText("Level "+std::to_string(this->player_lives), 0, 0, "medium");
 	}
 	if (this->state == GAME_DEFEAT)	//???渲染出背景模糊的效果
 	{
@@ -320,7 +324,9 @@ void Game::render()
 		buff_manager->draw(*renderer);	//画道具
 		particles->draw();		//画粒子在其他之后 在球之前 因为没有深度检测
 
-		text_renderer->renderText("DEFEATED!", 60, 160, "bold", glm::vec3(1.0f, 0.2f, 0.2f));
+		//text_renderer->renderText("DEFEATED!", 60, 160, "bold", glm::vec3(1.0f, 0.2f, 0.2f));
+		text_renderer->renderText("DEFEATED!", text_renderer->method_1, "bold"
+			, glm::vec3(1.0f, 0.2f, 0.2f));
 	}
 	post_processor->endRender();
 	post_processor->render(static_cast<GLfloat>(glfwGetTime()),this->screen_width,this->screen_height );
