@@ -63,7 +63,6 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);		//常用的混合函数
 
 	breakout.init();
-	breakout.state = GAME_ACTIVE;  //设置游戏状态
 
 	//帧时间 用于平滑绘制
 	GLfloat deltaTime = 0.0f;

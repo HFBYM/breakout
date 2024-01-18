@@ -19,7 +19,6 @@ TextRenderer::TextRenderer(GLuint width, GLuint height)		///???更好的理解和实现
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GL_FLOAT), nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
 }
 void TextRenderer::load(std::string font_file, GLuint font_size, std::string font_name)
 {
@@ -111,17 +110,17 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y,
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 }
-void TextRenderer::renderText(std::string text, TextMethod& method, std::string font_name, 
-	glm::vec3 color, GLfloat scale)
+void TextRenderer::renderText(std::string text, GLfloat x_pos, GLfloat y_pos,
+	TextMethod& method, std::string font_name, GLfloat scale)
 {
-	GLfloat x = method.xpos;
-	GLfloat y = method.ypos;
+	GLfloat x = method.xpos + x_pos;
+	GLfloat y = method.ypos + y_pos;
 	if (!this->m_lib.count(font_name))
 	{
 		std::cout << "ERROR::FONT: the name " << font_name << " hasn't been found" << std::endl;
 		__debugbreak();
 	}
-	this->text_shader.setVector3f("color", color, true);
+	this->text_shader.setVector3f("color", method.color, true);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(this->vao);
 
@@ -162,23 +161,56 @@ void TextRenderer::renderText(std::string text, TextMethod& method, std::string 
 void TextRenderer::update(GLfloat dt)
 {
 	this->method_1.update(dt);
+	this->method_2.update(dt);
+}
+void TextRenderer::reset()
+{
+	this->method_1.reset();
+	this->method_2.reset();
 }
 TextMethod_1::TextMethod_1()
 {
-	this->xpos = 0;
-	this->ypos = 100;
-	this->omiga = 4.5;
-	this->omiga = 30 / 180 * 3.14;		//????
-	this->time = 0.0f;
+	this->reset();
 }
 void TextMethod_1::update(GLfloat dt)
 {
-	if (this->omiga * this->time > 90)		//达到直角就停下
+	this->time += dt;		//???超出范围怎么办
+	if (this->omiga * this->time < 90 / 180.0 * 3.14)		//达到直角就停下
 	{
-		__debugbreak();
-		return;
+		this->xpos = 60 * glm::sin(this->omiga * time);
+		this->ypos = 180 - 60 * glm::cos(this->omiga * time);
 	}
+	else
+	{
+		this->ypos = 180 + 5 * glm::cos(this->omiga * time);
+	}
+}
+void TextMethod_1::reset()
+{
+	this->xpos = 0;
+	this->ypos = 100;
+	this->omiga = 180 / 180.0 * 3.14;		//弧度制
+	this->time = 0.0f;
+	this->color = glm::vec3(1.0f, 0.2f, 0.2f);
+}
+TextMethod_2::TextMethod_2()
+{
+	this->reset();
+}
+void TextMethod_2::update(GLfloat dt)
+{
 	this->time += dt;
-	this->xpos = 60 * glm::sin(this->omiga * time);
-	this->ypos = 160 - 60 * glm::cos(this->omiga * time);
+	if (this->omiga * this->time > 90 / 180.0 * 3.14)		//达到直角就出现
+	{
+		this->color = glm::vec3(glm::abs(glm::cos(this->omiga * time)));
+	}
+	else
+		this->color = glm::vec3(0.0f);
+}
+void TextMethod_2::reset()
+{
+	this->xpos = 0;
+	this->ypos = 0;
+	this->omiga = 180 / 180.0 * 3.14;		//弧度制
+	this->time = 0.0f;
 }

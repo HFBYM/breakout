@@ -2,7 +2,8 @@
 #include"PostProcess.h"
 #include"Debug.h"
 PostProcessor::PostProcessor(Shader shader, GLuint width, GLuint height):
-	shader(shader),init_width(width),init_height(height),confuse(false),chaos(false),shake(false),tex(Texture2D())
+	shader(shader),init_width(width),init_height(height),confuse(false),blurry(false),
+	chaos(false),shake(false),tex(Texture2D())
 {
 	glGenFramebuffers(1, &this->ms_fbo);	//是帧缓冲不是一般的缓冲
 	glGenFramebuffers(1, &this->fbo);
@@ -84,6 +85,7 @@ void PostProcessor::render(GLfloat time, GLuint screen_width, GLuint screen_heig
 	this->shader.setInteger("chaos", this->chaos);
 	this->shader.setInteger("shake", this->shake);
 	this->shader.setInteger("confuse", this->confuse);
+	this->shader.setInteger("blurry", this->blurry);
 	glActiveTexture(GL_TEXTURE0);
 	this->tex.bind();
 	glBindVertexArray(this->vao);

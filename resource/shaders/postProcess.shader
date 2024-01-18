@@ -14,7 +14,7 @@ void main()
 	{
 		float strength = 0.3;
 		vec2 pos = vec2(tex.x + sin(time) * strength, tex.y + cos(time) * strength);
-		texCoord = pos;		//通过旋转帧缓冲的纹理坐标达到镜头旋转的效果	????如何实现 ???用位置
+		texCoord = pos;		//通过旋转帧缓冲的纹理坐标达到镜头旋转的效果 用位置会导致纹理无拉伸
 	}
 	else if (confuse)
 		texCoord = vec2(1.0 - tex.x, 1.0 - tex.y);
@@ -24,7 +24,7 @@ void main()
 	{
 		float strength = 0.01;
 		gl_Position.x += cos(time * 10) * strength;
-		gl_Position.y += cos(time * 15) * strength;		//用纹理？？？？
+		gl_Position.y += cos(time * 15) * strength;		//用纹理会导致出现拉伸
 	}
 }
 
@@ -34,6 +34,7 @@ in vec2 texCoord;				//会插值进行补全
 uniform bool chaos;				//两者的uniform并不互通
 uniform bool confuse;
 uniform bool shake;
+uniform bool blurry;
 
 uniform sampler2D scene;
 uniform vec2 offset[9];			//用于计算偏移的向量		这些参数由外部进行传递而不用每次着色器都创建一次
@@ -43,7 +44,7 @@ void main()
 {
 	gl_FragColor = vec4(0.0f);
 	vec3 samples[9];	//先把像素周围的颜色采样
-	if (chaos || shake)
+	if (chaos || shake || blurry)
 		for (int i = 0; i < 9; i++)
 			samples[i] = vec3(texture(scene, texCoord + offset[i]));
 	if (chaos)
@@ -54,7 +55,7 @@ void main()
 	}
 	else if (confuse)
 		gl_FragColor = vec4(1 - texture(scene, texCoord).rgb, 1.0f);	//反转颜色
-	else if (shake)
+	else if (shake || blurry)
 	{
 		for (int i = 0; i < 9; i++)
 			gl_FragColor += vec4(samples[i] * blur_kernel[i], 0.0f);
