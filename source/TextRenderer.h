@@ -37,6 +37,14 @@ public:
 	void virtual update(GLfloat dt);
 	void virtual reset();
 };
+class TextMethod_3 :public TextMethod		//更好的实现???
+{
+public:
+	TextMethod_3();
+	GLuint i;
+	void virtual update(GLfloat dt);
+	void virtual reset();
+};
 
 class TextRenderer
 {
@@ -45,6 +53,7 @@ public:
 	Shader text_shader;		//专门给字体的着色器
 	TextMethod_1 method_1;
 	TextMethod_2 method_2;
+	TextMethod_3 method_3;
 
 	TextRenderer(GLuint width, GLuint height);
 	void load(std::string font_file, GLuint font_size, std::string font_name);

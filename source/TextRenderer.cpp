@@ -162,11 +162,13 @@ void TextRenderer::update(GLfloat dt)
 {
 	this->method_1.update(dt);
 	this->method_2.update(dt);
+	this->method_3.update(dt);
 }
 void TextRenderer::reset()
 {
 	this->method_1.reset();
 	this->method_2.reset();
+	this->method_3.reset();
 }
 TextMethod_1::TextMethod_1()
 {
@@ -213,4 +215,24 @@ void TextMethod_2::reset()
 	this->ypos = 0;
 	this->omiga = 180 / 180.0 * 3.14;		//»¡¶ÈÖÆ
 	this->time = 0.0f;
+}
+TextMethod_3::TextMethod_3()
+{
+	this->reset();
+}
+void TextMethod_3::update(GLfloat dt)
+{
+	if (!(i++ % 10))
+	{
+		GLfloat red = (rand() % 11) / 10.0f;
+		GLfloat blue = (rand() % 11) / 10.0f;
+		GLfloat green = (rand() % 11) / 10.0f;
+		this->color = glm::vec3(red, blue, green);
+	}
+}
+void TextMethod_3::reset()
+{
+	this->xpos = 0;
+	this->ypos = 0;
+	this->i = 0;
 }

@@ -8,9 +8,13 @@
 #include<irrKlang/include/irrKlang.h>	//音乐库目录
 #include"TextRenderer.h"
 const GLuint init_lives = 1;
+const GLuint level_num = 5;
+
+using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
 
 using namespace irrklang;		//使用命名空间
-using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
+ISoundEngine* sound_engine = createIrrKlangDevice();	//初始化声音引擎
+
 SpriteRenderer* renderer;
 
 Player* player;
@@ -25,8 +29,6 @@ BuffManager* buff_manager;
 
 PostProcessor* post_processor;
 GLfloat shake_time = 0.0f;
-
-ISoundEngine* sound_engine = createIrrKlangDevice();	//初始化声音引擎
 
 TextRenderer* text_renderer;
 Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	???不够准确
@@ -80,8 +82,8 @@ Collision checkCollisions(Ball& one, Object& two)
 		return{ GL_FALSE,UP,glm::vec2(0.0f) };
 }
 
-Game::Game(GLuint width, GLuint height):state(GAME_MENU),screen_width(width),screen_height(height),keys(),
-level(0),init_screen_width(width), init_screen_height(height),player_lives(init_lives)	//不同关卡不同生命值???
+Game::Game(GLuint width, GLuint height):state(GAME_WIN),screen_width(width),screen_height(height),keys(),
+level(3),init_screen_width(width), init_screen_height(height),player_lives(init_lives)	//不同关卡不同生命值???
 {
 	//可以空白初始化变量
 }
@@ -124,25 +126,15 @@ void Game::init()	//进行所有资源的导入
 	ResourceManager::loadTexture("resource/textures/powerup_speed.png", GL_FALSE, "tex_speed");
 	ResourceManager::loadTexture("resource/textures/powerup_sticky.png", GL_FALSE, "tex_sticky");
 
-
 	//载入关卡
-	Level level_1, level_2, level_3, level_4, level_5;	//只有上半平面有
-	level_1.load("resource/levels/level_1.lvl", this->init_screen_width, 
-		static_cast<GLuint>(this->init_screen_height * 0.5));	
-	level_2.load("resource/levels/level_2.lvl", this->init_screen_width, 
-		static_cast<GLuint>(this->init_screen_height * 0.5));
-	level_3.load("resource/levels/level_3.lvl", this->init_screen_width, 
-		static_cast<GLuint>(this->init_screen_height * 0.5));
-	level_4.load("resource/levels/level_4.lvl", this->init_screen_width, 
-		static_cast<GLuint>(this->init_screen_height * 0.5));
-	level_5.load("resource/levels/level_5.lvl", this->init_screen_width, 
-		static_cast<GLuint>(this->init_screen_height * 0.5));
-	this->levels.push_back(level_1);
-	this->levels.push_back(level_2);
-	this->levels.push_back(level_3);
-	this->levels.push_back(level_4);
-	this->levels.push_back(level_5);
-	this->level = 0;	//起始关卡为1
+	for (unsigned int i = 0; i < level_num; i++)
+	{
+		Level level;
+		std::string str = "resource/levels/level_" + std::to_string(i + 1) + ".lvl";
+		level.load(str.c_str(), this->init_screen_width,
+			static_cast<GLuint>(this->init_screen_height * 0.5));
+		this->levels.push_back(level);
+	}
 
 	renderer = new SpriteRenderer (ResourceManager::getShader("sprite").use());	//直接拿到精灵的渲染
 
@@ -163,7 +155,7 @@ void Game::init()	//进行所有资源的导入
 	sound_engine->play2D("resource/music/breakout.mp3", GL_TRUE);	//重复播放
 
 	text_renderer = new TextRenderer(this->init_screen_width, this->init_screen_height);
-	text_renderer->load("resource/font/ARIALNI.TTF", 20, "medium");	//导入绝对路径arialbi.ttf
+	text_renderer->load("resource/font/ARIALNI.TTF", 20, "medium");	//导入相对路径arialbi.ttf
 	text_renderer->load("resource/font/arialbi.ttf", 40, "bold");	//用于标题
 	Check();
 }
@@ -255,13 +247,7 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 		if (this->keys[GLFW_KEY_ENTER])		//再来一次
 		{
 			this->resetLevel();
-			this->state = GAME_ACTIVE;
-			this->player_lives = init_lives;
-			buff_manager->clear();		//清除之前的道具
-			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-				static_cast<GLfloat>(this->init_screen_height));
-			ball->isStuck = GL_TRUE;
-			text_renderer->reset();
+			this->reset();
 			post_processor->blurry = GL_FALSE;
 		}
 		if (this->keys[GLFW_KEY_BACKSPACE])
@@ -272,69 +258,47 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 		if (this->keys[GLFW_KEY_1])
 		{
 			this->level = 0;
-			this->resetLevel();
-			this->state = GAME_ACTIVE;
-			this->player_lives = init_lives;
-			buff_manager->clear();		//清除之前的道具
-			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-				static_cast<GLfloat>(this->init_screen_height));
-			ball->isStuck = GL_TRUE;
-			text_renderer->reset();
+			this->reset();
 			post_processor->blurry = GL_FALSE;
 		}
 		else if (this->keys[GLFW_KEY_2])
 		{
 			this->level = 1;
-			this->resetLevel();
-			this->state = GAME_ACTIVE;
-			this->player_lives = init_lives;
-			buff_manager->clear();		//清除之前的道具
-			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-				static_cast<GLfloat>(this->init_screen_height));
-			ball->isStuck = GL_TRUE;
-			text_renderer->reset();
+			this->reset();
 			post_processor->blurry = GL_FALSE;
 		}
 		else if (this->keys[GLFW_KEY_3])
 		{
 			this->level = 2;
-			this->resetLevel();
-			this->state = GAME_ACTIVE;
-			this->player_lives = init_lives;
-			buff_manager->clear();		//清除之前的道具
-			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-				static_cast<GLfloat>(this->init_screen_height));
-			ball->isStuck = GL_TRUE;
-			text_renderer->reset();
+			this->reset();
 			post_processor->blurry = GL_FALSE;
 		}
 		else if (this->keys[GLFW_KEY_4])
 		{
 			this->level = 3;
-			this->resetLevel();
-			this->state = GAME_ACTIVE;
-			this->player_lives = init_lives;
-			buff_manager->clear();		//清除之前的道具
-			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-				static_cast<GLfloat>(this->init_screen_height));
-			ball->isStuck = GL_TRUE;
-			text_renderer->reset();
+			this->reset();
 			post_processor->blurry = GL_FALSE;
 		}
 		else if (this->keys[GLFW_KEY_5])
 		{
 			this->level = 4;
-			this->resetLevel();
-			this->state = GAME_ACTIVE;
-			this->player_lives = init_lives;
-			buff_manager->clear();		//清除之前的道具
-			player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
-				static_cast<GLfloat>(this->init_screen_height));
-			ball->isStuck = GL_TRUE;
-			text_renderer->reset();
+			this->reset();
 			post_processor->blurry = GL_FALSE;
 		}
 		else;
+	}
+	else if (this->state == GAME_WIN)
+	{
+		if (this->keys[GLFW_KEY_BACKSPACE])
+			this->state = GAME_MENU;
+		if (this->level + 1 < level_num)
+		{
+			if (this->keys[GLFW_KEY_ENTER])
+			{
+				this->level++;
+				this->reset();
+			}
+		}
 	}
 	else
 		return;
@@ -346,8 +310,11 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 		//更新
 		ball->move(dt, this->init_screen_width, player->pos + glm::vec2(player->size.x / 2 - ball_radius,
 			-2 * ball_radius));
-		buff_manager->updatePowerUp(dt, *post_processor, static_cast<GLfloat>(this->init_screen_height), ball->color);
-		//检查碰撞
+		buff_manager->updatePowerUp(dt, *post_processor, static_cast<GLfloat>(this->init_screen_height), 
+			ball->color);
+		particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	
+		//一次激活两个 offset让粒子在球里面出现
+
 		this->doCollisions();
 		//检查是否碰到底边
 		if (ball->pos.y >= this->init_screen_height)
@@ -362,7 +329,12 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 				buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
 			}
 		}
-		particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	//一次激活两个 offset让粒子在球里面出现
+		if (this->levels[this->level].isCompleted())	//成功通过关卡
+		{
+			this->state = GAME_WIN;
+			buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
+		}
+
 		if (shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
 		{
 			shake_time -= dt;	//1s失去1
@@ -370,7 +342,7 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 				post_processor->shake = GL_FALSE;
 		}
 	}
-	else if (this->state == GAME_DEFEAT)
+	else if (this->state == GAME_DEFEAT || this->state == GAME_WIN || this->state == GAME_MENU)
 	{
 		text_renderer->update(dt);
 	}
@@ -393,7 +365,7 @@ void Game::render()
 
 		text_renderer->renderText("Lives " + std::to_string(this->player_lives), 0, 0, "medium");
 	}
-	else if (this->state == GAME_DEFEAT)	//???渲染出背景模糊的效果
+	else if (this->state == GAME_DEFEAT)
 	{
 		renderer->drawSprite(ResourceManager::getTexture("background"), glm::vec2(0.0f, 0.0f)
 			, glm::vec2(this->init_screen_width, this->init_screen_height), 0.0f);	//背景
@@ -413,14 +385,46 @@ void Game::render()
 	{
 		renderer->drawSprite(ResourceManager::getTexture("background"), glm::vec2(0.0f, 0.0f)
 			, glm::vec2(this->init_screen_width, this->init_screen_height), 0.0f);	//背景
-		text_renderer->renderText("Breakout", 140, 150, "bold");
-		text_renderer->renderText("press from 1 to 5 to choose a level", 20, 400, "medium");
+		text_renderer->renderText("Breakout", 140, 150, text_renderer->method_3, "bold");
+		text_renderer->renderText("press from 1 to "+std::to_string(level_num) + " to choose a level", 
+			20, 400, text_renderer->method_2, "medium");
+	}
+	else if (this->state == GAME_WIN)
+	{
+		renderer->drawSprite(ResourceManager::getTexture("background"), glm::vec2(0.0f, 0.0f)
+			, glm::vec2(this->init_screen_width, this->init_screen_height), 0.0f);	//背景
+		this->levels[this->level].draw(*renderer);	//关卡
+		player->draw(*renderer);		//画挡板
+		buff_manager->draw(*renderer);	//画道具
+		particles->draw();		//画粒子在其他之后 在球之前 因为没有深度检测
+		ball->draw(*renderer);
+
+		if (this->level + 1 < level_num)
+		{
+			text_renderer->renderText("Press Enter to Next Level",
+				125, 400, text_renderer->method_2, "medium");
+		}
+		text_renderer->renderText("Press Backspace to Back to Menu",
+			25, 450, text_renderer->method_2, "medium");
+
+		text_renderer->renderText("VICTORY!", 60, 40, text_renderer->method_1, "bold");
 	}
 	else;
 	post_processor->endRender();
 	post_processor->render(static_cast<GLfloat>(glfwGetTime()), this->screen_width, this->screen_height);
 	//得到glfw运行的时间(s)为单位  用时间来实现后期效果
 	Check();
+}
+void Game::reset()
+{
+	this->resetLevel();
+	this->state = GAME_ACTIVE;
+	this->player_lives = init_lives;
+	buff_manager->clear();		//清除之前的道具
+	player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
+		static_cast<GLfloat>(this->init_screen_height));
+	ball->isStuck = GL_TRUE;
+	text_renderer->reset();
 }
 void Game::resetLevel()
 {

@@ -37,6 +37,7 @@ public:
 	void princessInput(GLfloat dt);		//处理输入
 	void update(GLfloat dt);	//更新游戏状态
 	void render();				//渲染循环     将运动逻辑和渲染逻辑分开
+	void reset();
 	void resetLevel();
 	void reset_screen_size(int width, int height);
 };
