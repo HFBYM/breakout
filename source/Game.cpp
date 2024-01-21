@@ -7,7 +7,6 @@
 #include"Player.h"
 #include<irrKlang/include/irrKlang.h>	//音乐库目录
 #include"TextRenderer.h"
-const GLuint init_lives = 1;
 const GLuint level_num = 5;
 
 using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
@@ -83,7 +82,7 @@ Collision checkCollisions(Ball& one, Object& two)
 }
 
 Game::Game(GLuint width, GLuint height):state(GAME_MENU),screen_width(width),screen_height(height),keys(),
-level(3),init_screen_width(width), init_screen_height(height),player_lives(init_lives)	//不同关卡不同生命值???
+level(3),init_screen_width(width), init_screen_height(height),player_lives(0)
 {
 	//可以空白初始化变量
 }
@@ -419,7 +418,7 @@ void Game::reset()
 {
 	this->resetLevel();
 	this->state = GAME_ACTIVE;
-	this->player_lives = init_lives;
+	this->player_lives = this->levels[this->level].lives;
 	buff_manager->clear();		//清除之前的道具
 	player->reset(ball->isStuck, static_cast<GLfloat>(this->init_screen_width),
 		static_cast<GLfloat>(this->init_screen_height));

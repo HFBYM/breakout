@@ -21,8 +21,10 @@ void Level::load(const char* file, GLuint width, GLuint height)
 				row.push_back(tileCode);
 			tileData.push_back(row);
 		}
+		this->lives = tileData[tileData.size()-1][0];	//得到位于最后一行的生命值
+		tileData.pop_back();							//删除生命值的数据
 		if (tileData.size())
-			this->init(tileData, width, height);	//使用指针???
+			this->init(tileData, width, height);
 	}
 	else
 	{
