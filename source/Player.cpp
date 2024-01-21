@@ -4,8 +4,10 @@ void Player::princessInput(GLfloat dt, GLboolean keys[1024], GLfloat width, GLfl
 	GLfloat velocity = this->velocity * dt;	//使速度更平滑 不受渲染时间影响
 	if (keys[GLFW_KEY_A])
 	{
-		if (this->pos.x > 0)	//防止越界
+		if (this->pos.x >= velocity)	//防止越界
 			this->pos.x -= velocity;
+		else
+			this->pos.x = 0;
 	}
 	if (keys[GLFW_KEY_D])
 	{
@@ -19,8 +21,10 @@ void Player::princessInput(GLfloat dt, GLboolean keys[1024], GLfloat width, GLfl
 	}
 	if (keys[GLFW_KEY_S])
 	{
-		if (this->pos.y < height - this->size.y)
+		if (this->pos.y + velocity <= height - this->size.y)
 			this->pos.y += velocity;
+		else
+			this->pos.y = height - this->size.y;
 	}
 }
 void Player::reset(GLboolean& ball_isStuck, GLfloat width, GLfloat height)

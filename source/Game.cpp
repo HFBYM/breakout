@@ -82,7 +82,7 @@ Collision checkCollisions(Ball& one, Object& two)
 		return{ GL_FALSE,UP,glm::vec2(0.0f) };
 }
 
-Game::Game(GLuint width, GLuint height):state(GAME_WIN),screen_width(width),screen_height(height),keys(),
+Game::Game(GLuint width, GLuint height):state(GAME_MENU),screen_width(width),screen_height(height),keys(),
 level(3),init_screen_width(width), init_screen_height(height),player_lives(init_lives)	//不同关卡不同生命值???
 {
 	//可以空白初始化变量
