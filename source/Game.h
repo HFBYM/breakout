@@ -2,6 +2,13 @@
 #include"Debug.h"
 #include"Level.h"
 #include"BuffManager.h"
+#include<irrKlang/include/irrKlang.h>	//音乐库目录
+#include"ParticleGenerator.h"
+#include"PostProcess.h"
+#include"Ball.h"
+#include"Player.h"
+#include"TextRenderer.h"
+
 enum GameState		//代表游戏当前状态
 {
 	GAME_ACTIVE,
@@ -27,6 +34,17 @@ public:
 	std::vector<Level> levels;	//游戏关卡
 	GLuint level;				//当前关卡
 	int player_lives;		//玩家生命值
+
+	//工具类		尽量不要用全局变量
+	irrklang::ISoundEngine* sound_engine;		//需初始化
+	SpriteRenderer* renderer = nullptr;
+	Player* player = nullptr;
+	Ball* ball = nullptr;
+	ParticleGenerator* particles = nullptr;		//?????物体破碎时的粒子效果????
+	BuffManager* buff_manager = nullptr;
+	PostProcessor* post_processor = nullptr;
+	TextRenderer* text_renderer = nullptr;
+
 	//析构与构造
 	Game(GLuint width, GLuint height);
 	~Game();

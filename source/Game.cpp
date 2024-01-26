@@ -1,36 +1,14 @@
 #include"Game.h"
 #include"SpriteRenderer.h"
 #include"Resource_manager.h"	//静态的好处 包含即可更改
-#include"Ball.h"
-#include"ParticleGenerator.h"
-#include"PostProcess.h"
-#include"Player.h"
-#include<irrKlang/include/irrKlang.h>	//音乐库目录
-#include"TextRenderer.h"
-const GLuint init_lives = 1;
-const GLuint level_num = 5;
+static const GLuint init_lives = 1;
+static const GLuint level_num = 5;
 
 using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
 
-using namespace irrklang;		//使用命名空间
-ISoundEngine* sound_engine = createIrrKlangDevice();	//初始化声音引擎
+static const glm::vec2 ball_velocity(200.0f, -450.0f);
+static const GLfloat ball_radius(25.0f);
 
-SpriteRenderer* renderer;
-
-Player* player;
-
-const glm::vec2 ball_velocity(200.0f, -450.0f);
-const GLfloat ball_radius(25.0f);
-Ball* ball;
-
-ParticleGenerator* particles;		//?????物体破碎时的粒子效果????
-
-BuffManager* buff_manager;
-
-PostProcessor* post_processor;
-GLfloat shake_time = 0.0f;
-
-TextRenderer* text_renderer;
 Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	???不够准确
 {
 	glm::vec2 compass[] = {
@@ -82,7 +60,8 @@ Collision checkCollisions(Ball& one, Object& two)
 		return{ GL_FALSE,UP,glm::vec2(0.0f) };
 }
 
-Game::Game(GLuint width, GLuint height):state(GAME_MENU),screen_width(width),screen_height(height),keys(),
+Game::Game(GLuint width, GLuint height):state(GAME_MENU),screen_width(width),screen_height(height),keys(), 
+sound_engine(irrklang::createIrrKlangDevice()),
 level(3),init_screen_width(width), init_screen_height(height),player_lives(init_lives)	//不同关卡不同生命值???
 {
 	//可以空白初始化变量
@@ -91,6 +70,20 @@ Game::~Game()
 {
 	if(renderer)
 		delete renderer;
+	if (sound_engine)
+		delete sound_engine;
+	if (player)
+		delete player;
+	if (ball)
+		delete ball;
+	if (particles)
+		delete particles;
+	if (buff_manager)
+		delete buff_manager;
+	if (post_processor)
+		delete post_processor;
+	if (text_renderer)
+		delete text_renderer;
 }
 void Game::init()	//进行所有资源的导入
 {
@@ -180,7 +173,7 @@ void Game::doCollisions()
 				else	//坚固的就抖动
 				{
 					sound_engine->play2D("resource/music/bleep.mp3", GL_FALSE);	//不重复播放
-					shake_time = 0.05f;
+					post_processor->shake_time = 0.05f;
 					post_processor->shake = GL_TRUE;
 				}
 				Direction dir = std::get<1>(ret);
@@ -335,10 +328,10 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 			buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
 		}
 
-		if (shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
+		if (post_processor->shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
 		{
-			shake_time -= dt;	//1s失去1
-			if (shake_time <= 0.0f)		//放在里面防止多次设定
+			post_processor->shake_time -= dt;	//1s失去1
+			if (post_processor->shake_time <= 0.0f)		//放在里面防止多次设定
 				post_processor->shake = GL_FALSE;
 		}
 	}
