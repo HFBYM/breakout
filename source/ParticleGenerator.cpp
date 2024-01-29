@@ -63,7 +63,7 @@ void ParticleGenerator::init()
 		this->particles.push_back(Particle());	//用匿名对象来初始化
 	Check();
 }
-GLuint lastParticle = 0;	//用于找到最后一个被熄灭的粒子
+static GLuint lastParticle = 0;	//用于找到最后一个被熄灭的粒子
 GLuint ParticleGenerator::firstUnusedParticle()
 {
 	for (GLuint i = lastParticle; i < this->amount; i++)

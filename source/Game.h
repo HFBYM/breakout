@@ -36,7 +36,7 @@ public:
 	int player_lives;		//玩家生命值
 
 	//工具类		尽量不要用全局变量
-	irrklang::ISoundEngine* sound_engine;		//需初始化
+	irrklang::ISoundEngine* sound_engine = irrklang::createIrrKlangDevice();	//初始化
 	SpriteRenderer* renderer = nullptr;
 	Player* player = nullptr;
 	Ball* ball = nullptr;
