@@ -137,7 +137,7 @@ void Game::init()	//进行所有资源的导入
 	ball = new Ball(ball_pos, ball_radius, ball_velocity, ResourceManager::getTexture("basketball"));
 
 	particles = new ParticleGenerator(ResourceManager::getShader("particle"),
-		ResourceManager::getTexture("particle"), 500);	//总共500个粒子
+		ResourceManager::getTexture("particle"));
 
 	post_processor = new PostProcessor(ResourceManager::getShader("postProcess"),
 		this->init_screen_width, this->init_screen_height);
@@ -163,6 +163,7 @@ void Game::doCollisions()
 				if(!brick.isSolid)	//可摧毁的
 				{
 					sound_engine->play2D("resource/music/solid.wav", GL_FALSE);	//不重复播放
+					particles->particleForBlock(brick);
 					brick.destroyed = true;
 					buff_manager->spawnPowerUp(brick,this->levels[this->level].unit_size);	
 					//对每一个被摧毁的做一次生成判定

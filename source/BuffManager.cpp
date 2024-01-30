@@ -1,10 +1,6 @@
 #include<iostream>
 #include"BuffManager.h"
 #include"Resource_manager.h"		//静态的整个sln共享
-enum Chance {	//增益和负面buff的概率
-	BUFF=75,
-	DEBUFF=50
-};
 inline GLboolean shouldSpawn(GLuint chance)	//1/chance的几率
 {
 	return (rand() % chance) == 0;	//就用rand函数
@@ -13,27 +9,27 @@ void BuffManager::spawnPowerUp(Object& block, glm::vec2 unit_size)		//一直塞用完
 {
 	if (shouldSpawn(BUFF)) // 1/75的几率  
 		this->powerUps.push_back(		
-			PowerUp(SPEED, glm::vec3(0.5f, 0.5f, 1.0f), block.pos,		//即场景方块高的一半
+			PowerUp(PowerUp::SPEED, glm::vec3(0.5f, 0.5f, 1.0f), block.pos,		//即场景方块高的一半
 				ResourceManager::getTexture("tex_speed"), glm::vec2(unit_size.x, unit_size.y / 2)));
 	else if (shouldSpawn(BUFF))
 		this->powerUps.push_back(
-			PowerUp(STICKY, glm::vec3(1.0f, 0.5f, 1.0f), block.pos,
+			PowerUp(PowerUp::STICKY, glm::vec3(1.0f, 0.5f, 1.0f), block.pos,
 				ResourceManager::getTexture("tex_sticky"), glm::vec2(unit_size.x, unit_size.y / 2)));
 	else if (shouldSpawn(BUFF))
 		this->powerUps.push_back(
-			PowerUp(PASS_THROUGH, glm::vec3(0.5f, 1.0f, 0.5f), block.pos,
+			PowerUp(PowerUp::PASS_THROUGH, glm::vec3(0.5f, 1.0f, 0.5f), block.pos,
 				ResourceManager::getTexture("tex_pass"), glm::vec2(unit_size.x, unit_size.y / 2)));
 	else if (shouldSpawn(BUFF))
 		this->powerUps.push_back(
-			PowerUp(PAD_SIZE_INCREASE, glm::vec3(1.0f, 0.6f, 0.4f), block.pos,
+			PowerUp(PowerUp::PAD_SIZE_INCREASE, glm::vec3(1.0f, 0.6f, 0.4f), block.pos,
 				ResourceManager::getTexture("tex_size"), glm::vec2(unit_size.x, unit_size.y / 2)));
 	else if (shouldSpawn(DEBUFF))		// 负面道具
 		this->powerUps.push_back(
-			PowerUp(CONFUSE, glm::vec3(1.0f, 0.3f, 0.3f), block.pos,
+			PowerUp(PowerUp::CONFUSE, glm::vec3(1.0f, 0.3f, 0.3f), block.pos,
 				ResourceManager::getTexture("tex_confuse"), glm::vec2(unit_size.x, unit_size.y / 2)));
 	else if (shouldSpawn(DEBUFF))
 		this->powerUps.push_back(
-			PowerUp(CHAOS, glm::vec3(0.9f, 0.25f, 0.25f), block.pos,
+			PowerUp(PowerUp::CHAOS, glm::vec3(0.9f, 0.25f, 0.25f), block.pos,
 				ResourceManager::getTexture("tex_chaos"), glm::vec2(unit_size.x, unit_size.y / 2)));
 	else
 		return;
@@ -43,19 +39,19 @@ void BuffManager::activatePowerUp(PowerUp& powerUp,Ball& ball, Player& player, P
 {
 	switch (powerUp.m_type)
 	{
-	case SPEED:		player.velocity *= 1.2f;	break;	//????生成疾风效果
-	case STICKY:	ball.isStuck = GL_TRUE;	break;
-	case PAD_SIZE_INCREASE:	player.size.x += 50;	break;
-	case PASS_THROUGH:	this->t_pass_through += T_PASS_THROUGH;	//增加时间
+	case PowerUp::SPEED:		player.velocity *= 1.2f;	break;	//????生成疾风效果
+	case PowerUp::STICKY:	ball.isStuck = GL_TRUE;	break;
+	case PowerUp::PAD_SIZE_INCREASE:	player.size.x += 50;	break;
+	case PowerUp::PASS_THROUGH:	this->t_pass_through += T_PASS_THROUGH;	//增加时间
 		ball.color = glm::vec3(1.0f, 0.5f, 0.5f);	break;		//穿透为红色
-	case CONFUSE:	
+	case PowerUp::CONFUSE:
 		if (!post_processor.chaos)
 		{
 			post_processor.confuse = GL_TRUE;
 			this->t_confuse += T_CONFUSE;	//触发一次就增加持续时间
 		}
 		break;
-	case CHAOS:		
+	case PowerUp::CHAOS:
 		if (!post_processor.confuse)
 		{
 			post_processor.chaos = GL_TRUE;

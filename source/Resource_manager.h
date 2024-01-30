@@ -19,7 +19,6 @@ public:
 	static Texture2D& getTexture(std::string name);
 	static void clear();
 private:
-	ResourceManager(){}
 	static Shader loadShaderFromFile(const GLchar* cShaderFile, const GLchar* fShaderFile);
 	static Shader loadShaderFromFile(const GLchar* file);
 	static Texture2D loadTextureFromFile(const GLchar* file, GLboolean alpha);

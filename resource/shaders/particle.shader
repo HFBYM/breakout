@@ -7,7 +7,7 @@ uniform mat4 proj;
 uniform vec2 offset;
 void main()
 {
-	float scale = 10.0f;
+	float scale = 10.0f;		//粒子的大小
 	texCoord = vertex.zw;
 	gl_Position = proj * vec4((vertex.xy * scale) + offset, 0.0f, 1.0f);	//略去了model的移动和scale
 }
@@ -19,5 +19,5 @@ uniform sampler2D sprite;
 uniform vec4 particleColor;
 void main()
 {
-	gl_FragColor = texture(sprite, texCoord) * particleColor;
+	gl_FragColor = vec4(1.0f, 1.0f, 1.0f, texture(sprite, texCoord).w) * particleColor;	//只要alpha
 }

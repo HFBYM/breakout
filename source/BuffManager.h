@@ -1,14 +1,32 @@
 #pragma once
 #include<vector>
-#include"PowerUp.h"
 #include"Ball.h"
 #include"PostProcess.h"
 #include"Player.h"
-enum Duration {		//枚举常量只能是整数
-	T_PASS_THROUGH = 20, T_CHAOS = 5, T_CONFUSE = 5
+#include"Object.h"
+static const glm::vec2 VELOCITY(0.0f, 150.0f);
+struct PowerUp :public Object	//???加个滑冰的debuff
+{
+public:
+	enum BuffType {
+		SPEED, STICKY, PASS_THROUGH, PAD_SIZE_INCREASE, CONFUSE, CHAOS
+	};
+	BuffType m_type;
+
+	PowerUp(BuffType type, glm::vec3 color, glm::vec2 pos, Texture2D tex, glm::vec2 size)
+		:Object(pos, size, tex, color, VELOCITY), m_type(type)
+	{}
 };
 class BuffManager	//用于管理各个道具
 {
+private:
+	enum Duration {		//枚举常量只能是整数
+		T_PASS_THROUGH = 20, T_CHAOS = 5, T_CONFUSE = 5
+	};
+	enum Chance {	//增益和负面buff的概率
+		BUFF = 75,
+		DEBUFF = 50
+	};
 public:
 	std::vector<PowerUp> powerUps;
 	GLfloat t_pass_through, t_chaos, t_confuse;		//各个buff的持续时间
