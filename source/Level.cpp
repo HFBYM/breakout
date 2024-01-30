@@ -60,28 +60,30 @@ void Level::init(std::vector<std::vector<GLuint>> tileData, GLuint levelWidth, G
 		{
 			glm::vec2 pos(unit_width * x, unit_height * y);	//以左上角为坐标
 			glm::vec2 size(unit_width, unit_height);
-			if (tileData[y][x] == 1)
+			if (tileData[y][x] == Brick::SOLID)
 			{
-				Object brick(pos, size, ResourceManager::getTexture("block_solid"), glm::vec3(0.8f, 0.8f, 0.7f));
+				Brick brick(pos, size, ResourceManager::getTexture("block_solid"), 
+					Brick::SOLID, glm::vec3(0.8f, 0.8f, 0.7f));
 				brick.isSolid = GL_TRUE;
 				this->bricks.push_back(brick);
 			}
-			else if (tileData[y][x] == 0)	//0是空白 什么都不做
+			else if (tileData[y][x] == Brick::NONE)
 				continue;
 			else
 			{
 				glm::vec3 color(1.0f);
 				switch (tileData[y][x])
 				{
-				case 2:	color = glm::vec3(0.2f, 0.6f, 1.0f);	break;
-				case 3:	color = glm::vec3(0.0f, 0.7f, 0.0f);	break;
-				case 4:	color = glm::vec3(0.8f, 0.8f, 0.4f);	break;
-				case 5:	color = glm::vec3(1.0f, 0.5f, 0.0f);	break;
+				case Brick::BLUE:	color = glm::vec3(0.2f, 0.6f, 1.0f);	break;
+				case Brick::GREEN:	color = glm::vec3(0.0f, 0.7f, 0.0f);	break;
+				case Brick::YELLOW:	color = glm::vec3(0.8f, 0.8f, 0.4f);	break;
+				case Brick::RED:	color = glm::vec3(1.0f, 0.5f, 0.0f);	break;
 				default:
 					std::cout << "ERROR::LEVEL: unnamed type of brick" << std::endl;
 					__debugbreak();
 				}
-					this->bricks.push_back({ pos,size,ResourceManager::getTexture("block"),color });
+					this->bricks.push_back({ pos,size,ResourceManager::getTexture("block"),
+						static_cast<Brick::BrickType>(tileData[y][x]), color});
 			}
 		}
 	}

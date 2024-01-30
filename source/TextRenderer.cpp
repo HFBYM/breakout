@@ -191,7 +191,7 @@ void TextMethod_1::reset()
 {
 	this->xpos = 0;
 	this->ypos = 100;
-	this->omiga = 180 / 180.0 * 3.14;		//弧度制
+	this->omiga = static_cast<GLfloat>(180 / 180.0 * 3.14);		//弧度制
 	this->time = 0.0f;
 	this->color = glm::vec3(1.0f, 0.2f, 0.2f);
 }
@@ -213,7 +213,7 @@ void TextMethod_2::reset()
 {
 	this->xpos = 0;
 	this->ypos = 0;
-	this->omiga = 180 / 180.0 * 3.14;		//弧度制
+	this->omiga = static_cast <GLfloat>(180 / 180.0 * 3.14);		//弧度制
 	this->time = 0.0f;
 }
 TextMethod_3::TextMethod_3()
