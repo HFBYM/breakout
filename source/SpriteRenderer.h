@@ -11,5 +11,6 @@ public:
 private:
 	Shader shader;
 	GLuint va;
+
 	void initRenderData();		//初始化vao vbo参数
 };

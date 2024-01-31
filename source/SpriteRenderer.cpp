@@ -26,32 +26,41 @@ void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 pos, glm::vec2 siz
     glActiveTexture(GL_TEXTURE0);   //绑定到0槽
     texture.bind();
     glBindVertexArray(this->va);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
     glBindVertexArray(0);
+    Check();
 }
 void SpriteRenderer::initRenderData()
 {
-    GLfloat vertices[] = {          //???可用元素索引简化???
+    GLfloat vertices[] = {          //翻转过后左上角为原点
         // Pos      // Tex
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
-
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f
+        0.0f, 1.0f, 0.0f, 1.0f,     //0
+        1.0f, 0.0f, 1.0f, 0.0f,     //1
+        0.0f, 0.0f, 0.0f, 0.0f,     //2
+        1.0f, 1.0f, 1.0f, 1.0f,     //3
     };                          //注意面剔除 方向应同向
+    GLuint indices[] = {
+        0,1,2,
+        0,3,1
+    };
     GLuint vb;
+    GLuint eb;
     glGenVertexArrays(1, &this->va);
     glGenBuffers(1, &vb);
+    glGenBuffers(1, &eb);
+
+    glBindVertexArray(this->va);        //先绑定va再绑定相应的eb和vb
 
     glBindBuffer(GL_ARRAY_BUFFER, vb);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(this->va);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     glEnableVertexAttribArray(0);   //启用顶点属性
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);   //四个浮点解释为一个顶点
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);   //解除绑定防止被修改
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);   
+    //四个浮点解释为一个顶点
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);   //解除绑定防止被修改
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

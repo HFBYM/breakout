@@ -78,7 +78,7 @@ void ParticleGenerator::update(GLfloat dt, Object& object, GLuint newParticles, 
 }
 void ParticleGenerator::draw()
 {
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);	//开启混合
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);	//开启混合 增强粒子混合后的颜色
 	this->shader.use();
 	this->tex.bind();
 	glBindVertexArray(this->va);
@@ -89,7 +89,7 @@ void ParticleGenerator::draw()
 		{
 			this->shader.setVector2f("offset", p->pos);
 			this->shader.setVector4f("particleColor", p->color);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 		}
 		p = p->next;
 	}
@@ -102,7 +102,7 @@ void ParticleGenerator::draw()
 			{
 				this->shader.setVector2f("offset", particle.pos);
 				this->shader.setVector4f("particleColor", particle.color);
-				glDrawArrays(GL_TRIANGLES, 0, 6);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 			}
 		}
 		pb = pb->next;
@@ -149,23 +149,35 @@ void ParticleGenerator::init()
 {
 	Check();
 	GLuint vb;
+	GLuint eb;
 	GLfloat particle_quad[] = {		//左下角为原点
 		0.0f, 1.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 0.0f,
-
-		0.0f, 1.0f, 0.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f, 0.0f
+	};
+	GLuint indices[] = {
+		0,1,2,
+		0,3,1
 	};
 	glGenVertexArrays(1, &this->va);
 	glGenBuffers(1, &vb);
+	glGenBuffers(1, &eb);
+
 	glBindVertexArray(this->va);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad), particle_quad, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GL_FLOAT), 0);
+
 	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	Node* p = this->head = new Node;
 	for (GLuint i = 1; i < this->amount; i++)
