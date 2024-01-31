@@ -7,6 +7,7 @@
 #include"Player.h"
 #include<irrKlang/include/irrKlang.h>	//音乐库目录
 #include"TextRenderer.h"
+#include<iostream>
 static const GLuint level_num = 5;
 
 using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std::get<i>(val)访问
@@ -14,7 +15,7 @@ using Collision = std::tuple<GLboolean, Direction, glm::vec2>;	//类结构体 用std:
 static const glm::vec2 ball_velocity(200.0f, -450.0f);
 static const GLfloat ball_radius(25.0f);
 
-Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	???不够准确
+static Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向 新的检测方法与砖块的形状无关
 {
 	glm::vec2 compass[] = {
 		glm::vec2(0.0f,1.0f),	//y+	上
@@ -35,32 +36,34 @@ Direction getDirect(glm::vec2 target)	//得到一个向量的大致方向	???不够准确
 	}
 	return (Direction)best;
 }
-GLboolean checkCollisions(Object& one, Object& two)		
+static GLboolean checkCollisions(Object& one, Object& two)		
 {
 	//AABB-AABB		x方向和y方向的碰撞
 	bool collisionX = one.pos.x + one.size.x >= two.pos.x && two.pos.x + two.size.x >= one.pos.x;
 	bool collisionY = one.pos.y + one.size.y >= two.pos.y && two.pos.y + two.size.y >= one.pos.y;
 	return collisionX && collisionY;
 }
-Collision checkCollisions(Ball& one, Object& two)
+static Collision checkCollision(Ball& ball, Object& block)
 {
-	// 获取圆的中心 
-	glm::vec2 center(one.pos + one.radius);
-	// 计算AABB的信息（中心、半边长）
-	glm::vec2 aabb_half_extents(two.size.x / 2, two.size.y / 2);
-	glm::vec2 aabb_center(
-		two.pos.x + aabb_half_extents.x,
-		two.pos.y + aabb_half_extents.y
-	);
-	// 获取两个中心的差矢量
-	glm::vec2 difference = center - aabb_center;
-	glm::vec2 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);	//????
-	// AABB_center加上clamped这样就得到了碰撞箱上距离圆最近的点closest
-	glm::vec2 closest = aabb_center + clamped;
-	// 获得圆心center和最近点closest的矢量并判断是否 length <= radius
-	difference = closest - center;
-	if (glm::length(difference) < one.radius)	//发生碰撞	该模型本就不是很精确
-		return { GL_TRUE,getDirect(difference),difference };	//得到差矢用于重定位球
+	glm::vec2 center(ball.pos + ball.radius);		// 获取圆的中心 
+	glm::vec2 closest_point;						//通过位置确定圆在外面时离圆最近的点
+	if (center.x < block.pos.x)						//圆在左边
+		closest_point.x = block.pos.x;
+	else if (center.x > block.pos.x + block.size.x)	//圆在右边
+		closest_point.x = block.pos.x + block.size.x;
+	else
+		closest_point.x = center.x;
+
+	if (center.y < block.pos.y)						//圆在上边
+		closest_point.y = block.pos.y;
+	else if (center.y > block.pos.y + block.size.y)	//圆在下边
+		closest_point.y = block.pos.y + block.size.y;
+	else
+		closest_point.y = center.y;
+	//若圆在里面 则此判断无效！！因此不要出现圆在里面的情况
+	glm::vec2 diff = center - closest_point;
+	if (glm::length(diff) < ball.radius)	//发生碰撞
+		return { GL_TRUE,getDirect(diff),diff };	//得到差矢用于重定位球
 	else
 		return{ GL_FALSE,UP,glm::vec2(0.0f) };
 }
@@ -98,7 +101,7 @@ void Game::init()	//进行所有资源的导入
 
 	glm::mat4 proj = glm::ortho(0.0f, static_cast<GLfloat>(this->init_screen_width), 
 		static_cast<GLfloat>(this->init_screen_height), 0.0f, -1.0f, 1.0f);		
-	//正射投影即可 左上角是(0,0)与屏幕坐标对应	旋转中心在左上角???上下翻转??
+	//正射投影即可 左上角是(0,0)与屏幕坐标对应	旋转中心在左上角 上下翻转同时纹理也上下反转
 	ResourceManager::getShader("sprite").use().setInteger("image", 0);	//设定采样槽
 	ResourceManager::getShader("sprite").use().setMatrix4("proj", proj);	//设置正射投影
 
@@ -158,11 +161,12 @@ void Game::init()	//进行所有资源的导入
 }
 void Game::doCollisions()
 {
+	GLboolean collision_twice = false;		//防止一次碰撞两个导致速度反转出问题
 	for (auto& brick : this->levels[this->level].bricks)
 	{
 		if (!brick.destroyed)	//未被摧毁的
 		{
-			Collision ret = checkCollisions(*ball, brick);
+			Collision ret = checkCollision(*ball, brick);
 			if (std::get<0>(ret))	//发生碰撞
 			{
 				if(!brick.isSolid)	//可摧毁的
@@ -182,30 +186,24 @@ void Game::doCollisions()
 					post_processor->shake = GL_TRUE;
 				}
 				Direction dir = std::get<1>(ret);
-				glm::vec2 difference = std::get<2>(ret);
+				glm::vec2 diff = std::get<2>(ret);
 				if (dir == RIGHT || dir == LEFT)	//水平碰撞
 				{
-					ball->velocity.x *= -1;
-					//重定位	???	仅仅是一个小平移 不精确也够用
-					GLfloat penetration = ball->radius - glm::length(difference.x);
-					if (dir == LEFT)
-						ball->pos.x -= penetration;	
-					else
-						ball->pos.x += penetration;
+					if(!collision_twice)
+						ball->velocity.x *= -1;
 				}
 				else
 				{
-					ball->velocity.y *= -1;  // 反转垂直速度
-					GLfloat penetration = ball->radius - glm::length(difference.y);
-					if (dir == UP)
-						ball->pos.y -= penetration;	//上移
-					else
-						ball->pos.y += penetration;
+					if(!collision_twice)
+						ball->velocity.y *= -1;  // 反转垂直速度
 				}
+				glm::vec2 penetration = ball->radius * glm::normalize(diff) - diff;
+				ball->pos += penetration;
+				collision_twice = true;
 			}
 		}
 	}
-	Collision ret = checkCollisions(*ball, *player);
+	Collision ret = checkCollision(*ball, *player);
 	if (!ball->isStuck && std::get<0>(ret))		//未被固定且与挡板发生碰撞
 	{
 		GLfloat distance = ball->pos.x + ball->radius - (player->pos.x + player->size.x / 2);
@@ -214,7 +212,7 @@ void Game::doCollisions()
 
 		//速度更改
 		GLfloat strenghth = 2.0f;
-		ball->velocity.y = -glm::abs(ball->velocity.y);	//永远返回一个向上的速度 防止粘板 ???但会使下方碰撞出问题
+		ball->velocity.y = -glm::abs(ball->velocity.y);	//永远返回一个向上的速度 防止粘板
 		ball->velocity.x = ball_velocity.x * percentage * strenghth;	//x方向速度更改	使x方向有一些基本速度
 		ball->velocity = glm::normalize(ball->velocity) * glm::length(ball_velocity);	//保持速度大小不变
 	}
@@ -333,7 +331,7 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 			buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
 		}
 
-		if (post_processor->shake_time > 0.0f)	//将循环的时间与实现的时间分开		???放到发生器里面
+		if (post_processor->shake_time > 0.0f)	//将循环的时间与实现的时间分开
 		{
 			post_processor->shake_time -= dt;	//1s失去1
 			if (post_processor->shake_time <= 0.0f)		//放在里面防止多次设定

@@ -4,9 +4,9 @@
 #include"Debug.h"
 #include"Resource_manager.h"
 #include"Game.h"
-const GLuint init_screen_width = 800;
-const GLuint init_screen_height = 600;
-Game breakout(init_screen_width, init_screen_height);
+const static GLuint init_screen_width = 800;
+const static GLuint init_screen_height = 600;
+static Game breakout(init_screen_width, init_screen_height);
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) //按键回调函数
 {
@@ -118,3 +118,5 @@ int main()
 //粒子就是在一个物体后随机分布渲染多个有生命且随时间变透明的速度较小的物体 glBlendFunc(GL_SRC_ALPHA, GL_ONE)加强效果
 //帧缓冲是一个框架 必须要有完整的颜色附件 附件分为纹理和渲染缓冲对象(只写不采样)	该部分可在游戏主体之后添加
 //循环所需的时间只需要在代码出调控 传给GPU的是布尔值就行 道具类通过布尔值来实现操控 随机数就用rand
+//碰撞检测的底层是凸多边形的分离轴算法 最终归结为在与多边形各个外法矢平行的平面上进行投影然后检测
+//圆的外法矢就找圆心与最近顶点的连线

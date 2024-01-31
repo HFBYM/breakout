@@ -17,7 +17,7 @@ enum Direction
 };
 class Game
 {
-public:
+private:
 	enum GameState		//代表游戏当前状态
 	{
 		GAME_ACTIVE,
@@ -27,7 +27,6 @@ public:
 	};
 	//游戏状态
 	GameState state;
-	GLboolean keys[1024];       //用于处理输入
 	GLuint init_screen_width, init_screen_height;		//游戏初始分辨率
 	GLuint screen_width, screen_height;		//游戏后动态的分辨率
 	std::vector<Level> levels;	//游戏关卡
@@ -39,23 +38,28 @@ public:
 	SpriteRenderer* renderer = nullptr;
 	Player* player = nullptr;
 	Ball* ball = nullptr;
-	ParticleGenerator* particles = nullptr;		//?????物体破碎时的粒子效果????
+	ParticleGenerator* particles = nullptr;
 	BuffManager* buff_manager = nullptr;
 	PostProcessor* post_processor = nullptr;
 	TextRenderer* text_renderer = nullptr;
 
+	void doCollisions();
+	void reset();
+	void resetLevel();
+
+public:			//public是给外部的接口 使用类时只许看public部分
+
+	GLboolean keys[1024];       //用于处理输入
+
 	//析构与构造
 	Game(GLuint width, GLuint height);
 	~Game();
-
-	void doCollisions();
 	void init();       //加载着色器和纹理
+
 	//游戏循环
 	void princessInput(GLfloat dt);		//处理输入
 	void update(GLfloat dt);	//更新游戏状态
 	void render();				//渲染循环     将运动逻辑和渲染逻辑分开
-	void reset();
-	void resetLevel();
 	void reset_screen_size(int width, int height);
 };
 
