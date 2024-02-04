@@ -114,6 +114,7 @@ Texture2D ResourceManager::loadTextureFromFile(const GLchar* file, GLboolean alp
 		texture.image_format = GL_RGBA;
 	}
 	//stbi_set_flip_vertically_on_load(1);       //反转纹理 因为OpenGL从左下角开始 而图片加载从左上角开始
+	//但此处不用 因为透视矩阵是反过来的
 	int width, height;
 	unsigned char* image = stbi_load(file, &width, &height, 0,
 		texture.image_format == GL_RGB ? 3 : 4);

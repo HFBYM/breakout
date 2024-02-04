@@ -28,7 +28,7 @@ public:
 	void virtual update(GLfloat dt);
 	void virtual reset();
 };
-class TextMethod_2 :public TextMethod		//更好的实现???
+class TextMethod_2 :public TextMethod
 {
 public:
 	TextMethod_2();
@@ -37,7 +37,7 @@ public:
 	void virtual update(GLfloat dt);
 	void virtual reset();
 };
-class TextMethod_3 :public TextMethod		//更好的实现???
+class TextMethod_3 :public TextMethod
 {
 public:
 	TextMethod_3();

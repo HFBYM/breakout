@@ -1,7 +1,7 @@
 #pragma once
 #include"Object.h"
 const glm::vec2 VELOCITY(0.0f, 150.0f);
-class PowerUp :public Object	//???¼Ó¸ö»¬±ùµÄdebuff
+class PowerUp :public Object
 {
 public:
 	enum BuffType {

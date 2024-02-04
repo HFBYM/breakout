@@ -110,7 +110,6 @@ void Game::init()	//进行所有资源的导入
 	ResourceManager::getShader("particle").use().setMatrix4("proj", proj);	//设置正射投影
 	
 	//装入纹理
-	ResourceManager::loadTexture("resource/textures/CTRL.jpg", GL_TRUE, "cxk");
 	ResourceManager::loadTexture("resource/textures/background.jpg", GL_FALSE, "background");
 	ResourceManager::loadTexture("resource/textures/block.png", GL_FALSE, "block");
 	ResourceManager::loadTexture("resource/textures/block_solid.png", GL_FALSE, "block_solid");
@@ -231,8 +230,6 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 {
 	if (this->state == GAME_ACTIVE)	//运行时
 	{
-		if (this->keys[GLFW_KEY_P])		//???调试使用
-			__debugbreak();
 		player->princessInput(this->keys_status);
 		if (this->keys[GLFW_KEY_SPACE])
 			ball->isStuck = GL_FALSE;

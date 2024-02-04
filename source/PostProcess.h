@@ -8,7 +8,7 @@ public:
 	Texture2D tex;		//给默认帧缓冲的纹理
 	GLuint init_width, init_height;
 	GLfloat shake_time;
-	GLboolean confuse, chaos, shake, blurry;		//???冰块的负面效果
+	GLboolean confuse, chaos, shake, blurry;
 	PostProcessor(Shader shader, GLuint width, GLuint height);
 	void beginRender();		//准备帧缓冲
 	void endRender();		//恢复到默认帧缓冲

@@ -3,7 +3,7 @@
 #include FT_FREETYPE_H 
 #include"TextRenderer.h"
 #include"Resource_manager.h"
-TextRenderer::TextRenderer(GLuint width, GLuint height)		///???更好的理解和实现
+TextRenderer::TextRenderer(GLuint width, GLuint height)
 {
 	this->text_shader = ResourceManager::loadShader("resource/shaders/text.shader", "text_shader");
 	this->text_shader.setMatrix4("proj", glm::ortho(0.0f,		//设定透视矩阵
@@ -176,7 +176,7 @@ TextMethod_1::TextMethod_1()
 }
 void TextMethod_1::update(GLfloat dt)
 {
-	this->time += dt;		//???超出范围怎么办
+	this->time += dt;
 	if (this->omiga * this->time < 90 / 180.0 * 3.14)		//达到直角就停下
 	{
 		this->xpos = 60 * glm::sin(this->omiga * time);
