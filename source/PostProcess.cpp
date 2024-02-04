@@ -2,8 +2,8 @@
 #include"PostProcess.h"
 #include"Debug.h"
 PostProcessor::PostProcessor(Shader shader, GLuint width, GLuint height):
-	shader(shader),init_width(width),init_height(height),confuse(false),blurry(false),
-	chaos(false),shake(false),tex(Texture2D()),shake_time(0.0f)
+	shader(shader),init_width(width),init_height(height),confuse(GL_FALSE),blurry(GL_FALSE),
+	chaos(GL_FALSE),shake(GL_FALSE),tex(Texture2D()),shake_time(0.0f)
 {
 	glGenFramebuffers(1, &this->ms_fbo);	//是帧缓冲不是一般的缓冲
 	glGenFramebuffers(1, &this->fbo);

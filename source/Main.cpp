@@ -8,16 +8,22 @@ const static GLuint init_screen_width = 800;
 const static GLuint init_screen_height = 600;
 static Game breakout(init_screen_width, init_screen_height);
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) //按键回调函数
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) //按键回调函数 ??四键按不到
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)	//检测到esc就关闭窗口
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	if (key >= 0 && key < 1024)			//keys里面储存着所有被按下的字符键
 	{
 		if (action == GLFW_PRESS)
+		{
 			breakout.keys[key] = GL_TRUE;
+			breakout.keys_status[key].first = GL_TRUE;
+		}
 		else if (action == GLFW_RELEASE)
+		{
 			breakout.keys[key] = GL_FALSE;
+			breakout.keys_status[key].second = GL_TRUE;
+		}
 	}
 }
 void size_callback(GLFWwindow* window, int width, int height)
@@ -95,6 +101,7 @@ int main()
 //常量全大写 结构体、类名开头全大写 变量下划线 函数名驼峰
 //[]对应private成员 ()对应operator()的形参列表 mutable，对应const属性
 //<>包含的是不在项目中的文件 ""包含的是在项目中的文件 dll是动态运行库 要放在当前项目exe文件旁 lib是静态库在设置里链接
+//回调函数的调用是在主线程之外发生
 
 //几何着色器的输出会被传入光栅化阶段,把图元映射为最终屏幕上相应的像素，生成片段。
 //在片段着色器运行之前会执行裁切。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。

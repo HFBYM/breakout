@@ -161,7 +161,7 @@ void Game::init()	//进行所有资源的导入
 }
 void Game::doCollisions()
 {
-	GLboolean collision_twice = false;		//防止一次碰撞两个导致速度反转出问题
+	GLboolean collision_twice = GL_FALSE;		//防止一次碰撞两个导致速度反转出问题
 	for (auto& brick : this->levels[this->level].bricks)
 	{
 		if (!brick.destroyed)	//未被摧毁的
@@ -173,7 +173,7 @@ void Game::doCollisions()
 				{
 					sound_engine->play2D("resource/music/solid.wav", GL_FALSE);	//不重复播放
 					particles->particleForBlock(brick);
-					brick.destroyed = true;
+					brick.destroyed = GL_TRUE;
 					buff_manager->spawnPowerUp(brick,this->levels[this->level].unit_size);	
 					//对每一个被摧毁的做一次生成判定
 					if (buff_manager->t_pass_through!=0.0f)		//如果有穿越效果就直接穿过
@@ -199,7 +199,7 @@ void Game::doCollisions()
 				}
 				glm::vec2 penetration = ball->radius * glm::normalize(diff) - diff;
 				ball->pos += penetration;
-				collision_twice = true;
+				collision_twice = GL_TRUE;
 			}
 		}
 	}
@@ -231,12 +231,11 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 {
 	if (this->state == GAME_ACTIVE)	//运行时
 	{
-		player->princessInput(dt, this->keys, static_cast<GLfloat>(this->init_screen_width),
-			static_cast<GLfloat>(this->init_screen_height));
-		if (this->keys[GLFW_KEY_SPACE])
-			ball->isStuck = false;
 		if (this->keys[GLFW_KEY_P])		//???调试使用
 			__debugbreak();
+		player->princessInput(this->keys_status);
+		if (this->keys[GLFW_KEY_SPACE])
+			ball->isStuck = GL_FALSE;
 	}
 	else if (this->state == GAME_DEFEAT)
 	{
@@ -301,14 +300,17 @@ void Game::princessInput(GLfloat dt)	//板的速度与其他物体速度不同
 }
 void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 {
+	memset(this->keys_status, 0, 1024);		//重置使其为冲击
 	if (this->state == GAME_ACTIVE)
 	{
 		//更新
 		ball->move(dt, this->init_screen_width, player->pos + glm::vec2(player->size.x / 2 - ball_radius,
 			-2 * ball_radius));
 		buff_manager->updatePowerUp(dt, *post_processor, static_cast<GLfloat>(this->init_screen_height), 
-			ball->color);
+			ball->color, *player);
 		particles->update(dt, *ball, 2, glm::vec2(ball->radius * 4 / 5));	
+		player->update(dt, static_cast<GLfloat>(this->init_screen_width), 
+			static_cast<GLfloat>(this->init_screen_height));
 		//一次激活两个 offset让粒子在球里面出现
 
 		this->doCollisions();
@@ -322,13 +324,13 @@ void Game::update(GLfloat dt)	//用于更新内部的运动	每次循环需要运行的代码
 			{
 				this->state = GAME_DEFEAT;
 				post_processor->blurry = GL_TRUE;	//启用失败时模糊效果
-				buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
+				buff_manager->reset(*post_processor, ball->color, *player);	//终止所有的道具效果
 			}
 		}
 		if (this->levels[this->level].isCompleted())	//成功通过关卡
 		{
 			this->state = GAME_WIN;
-			buff_manager->reset(*post_processor, ball->color);	//终止所有的道具效果
+			buff_manager->reset(*post_processor, ball->color, *player);	//终止所有的道具效果
 		}
 
 		if (post_processor->shake_time > 0.0f)	//将循环的时间与实现的时间分开

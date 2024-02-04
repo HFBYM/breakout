@@ -50,7 +50,7 @@ Shader ResourceManager::loadShaderFromFile(const GLchar* file)
 		NONE = -1, VERTEX = 0, FRAGMENT = 1
 	};	//用枚举常量来记录状态
 	Type type = NONE;
-	bool v_found = false, f_found = false;		//记录是否被找到过
+	bool v_found = GL_FALSE, f_found = GL_FALSE;		//记录是否被找到过
 	while (std::getline(ifs, line))		//不断读取行
 	{
 		if (line.find("#shader") != std::string::npos)	//返回值不是空
@@ -58,12 +58,12 @@ Shader ResourceManager::loadShaderFromFile(const GLchar* file)
 			if (line.find("vertex") != std::string::npos)		//找到顶点着色器第一行
 			{
 				type = VERTEX;
-				v_found = true;
+				v_found = GL_TRUE;
 			}
 			if (line.find("fragment") != std::string::npos)		//片段着色器第一行
 			{
 				type = FRAGMENT;
-				f_found = true;
+				f_found = GL_TRUE;
 			}
 			continue;		//跳过
 		}

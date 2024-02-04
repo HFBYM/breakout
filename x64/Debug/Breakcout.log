@@ -1,3 +1,19 @@
 ﻿D:\VS\Visual Studio\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8028: 中间目录(x64\Debug\)包含从另一个项目(Breakcout.vcxproj)共享的文件。   这会导致错误的清除和重新生成行为。
+  Ball.cpp
+  BuffManager.cpp
+  Game.cpp
+  Level.cpp
+  Main.cpp
+D:\VS\VS项目\breakout\source\Main.cpp(1,1): warning C4828: 文件包含在偏移 0x15cf 处开始的字符，该字符在当前源字符集中无效(代码页 936)。
+  Object.cpp
   ParticleGenerator.cpp
+  Player.cpp
+  PostProcess.cpp
+  Resource_manager.cpp
+  Shader.cpp
+  SpriteRenderer.cpp
+  TextRenderer.cpp
+  正在生成代码...
+D:\VS\VS项目\breakout\source\Resource_manager.cpp(143): warning C4715: “ResourceManager::getTexture”: 不是所有的控件路径都返回值
+D:\VS\VS项目\breakout\source\Resource_manager.cpp(96): warning C4715: “ResourceManager::getShader”: 不是所有的控件路径都返回值
   Breakcout.vcxproj -> D:\VS\VS项目\breakout\x64\Debug\Breakout.exe

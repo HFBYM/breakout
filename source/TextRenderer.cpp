@@ -73,7 +73,7 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y,
 		std::cout << "ERROR::FONT: the name " << font_name << " hasn't been found" << std::endl;
 		__debugbreak();
 	}
-	this->text_shader.setVector3f("color", color, true);
+	this->text_shader.setVector3f("color", color, GL_TRUE);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(this->vao);
 
@@ -120,7 +120,7 @@ void TextRenderer::renderText(std::string text, GLfloat x_pos, GLfloat y_pos,
 		std::cout << "ERROR::FONT: the name " << font_name << " hasn't been found" << std::endl;
 		__debugbreak();
 	}
-	this->text_shader.setVector3f("color", method.color, true);
+	this->text_shader.setVector3f("color", method.color, GL_TRUE);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(this->vao);
 

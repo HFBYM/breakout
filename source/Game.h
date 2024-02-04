@@ -50,6 +50,7 @@ private:
 public:			//public是给外部的接口 使用类时只许看public部分
 
 	GLboolean keys[1024];       //用于处理输入
+	std::pair<GLboolean, GLboolean> keys_status[1024];		//第一个是press 第二个是release 模拟冲量
 
 	//析构与构造
 	Game(GLuint width, GLuint height);
