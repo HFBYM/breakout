@@ -46,23 +46,23 @@ void BuffManager::activatePowerUp(PowerUp& powerUp,Ball& ball, Player& player, P
 	case PowerUp::SPEED:				player.velocity_num *= 1.2f;	break;
 	case PowerUp::STICKY:				ball.isStuck = GL_TRUE;		break;
 	case PowerUp::PAD_SIZE_INCREASE:	player.size.x += 50;		break;
-	case PowerUp::PASS_THROUGH:			this->t_pass_through += T_PASS_THROUGH;	//增加时间
+	case PowerUp::PASS_THROUGH:			this->t_pass_through += static_cast<float>(T_PASS_THROUGH);	//增加时间
 		ball.color = glm::vec3(1.0f, 0.5f, 0.5f);	break;		//穿透为红色
 	case PowerUp::CONFUSE:
 		if (!post_processor.chaos)
 		{
 			post_processor.confuse = GL_TRUE;
-			this->t_confuse += T_CONFUSE;	//触发一次就增加持续时间
+			this->t_confuse += static_cast<float>(T_CONFUSE);	//触发一次就增加持续时间
 		}
 		break;
 	case PowerUp::CHAOS:
 		if (!post_processor.confuse)
 		{
 			post_processor.chaos = GL_TRUE;
-			this->t_chaos += T_CHAOS;
+			this->t_chaos += static_cast<float>(T_CHAOS);
 		}
 		break;
-	case PowerUp::ICY:				this->t_icy += T_ICY;	player.color = glm::vec3(0.0f, 0.87f, 1.0f);	
+	case PowerUp::ICY:				this->t_icy += static_cast<float>(T_ICY);	player.color = glm::vec3(0.0f, 0.87f, 1.0f);
 									player.icy = GL_TRUE;				break;
 	default:	std::cout << "ERROR::BUFF: invalid type of buff" << std::endl;
 		__debugbreak();

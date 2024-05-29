@@ -92,6 +92,7 @@ Shader ResourceManager::getShader(std::string name)
 	{
 		std::cout << "ERROR::GET_SHADER: failed to find the shader named " << name << std::endl;
 		__debugbreak();
+		return shaders[name];
 	}
 }
 Shader ResourceManager::loadShader(const GLchar* vShaderFile, const GLchar* fShaderFile, std::string name)
@@ -140,6 +141,7 @@ Texture2D &ResourceManager::getTexture(std::string name)
 	{
 		std::cout << "ERROR::GET_TEXTURE: failed to find the texture named " << name << std::endl;
 		__debugbreak();
+		return textures[name];
 	}
 }
 void ResourceManager::clear()
