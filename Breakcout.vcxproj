@@ -178,7 +178,6 @@
     <ClInclude Include="source\ParticleGenerator.h" />
     <ClInclude Include="source\Player.h" />
     <ClInclude Include="source\PostProcess.h" />
-    <ClInclude Include="source\PowerUp.h" />
     <ClInclude Include="source\Resource_manager.h" />
     <ClInclude Include="source\Shader.h" />
     <ClInclude Include="source\TextRenderer.h" />

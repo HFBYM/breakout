@@ -101,9 +101,6 @@
     <ClInclude Include="source\PostProcess.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="source\PowerUp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="source\BuffManager.h">
       <Filter>头文件</Filter>
     </ClInclude>

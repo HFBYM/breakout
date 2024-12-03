@@ -80,6 +80,8 @@ void PostProcessor::endRender()
 void PostProcessor::render(GLfloat time, GLuint screen_width, GLuint screen_height)
 {
 	glViewport(0, 0, screen_width, screen_height);	//再将视口设置回当前窗口大小 反正帧缓冲到视口是满射
+	//glViewport(0, 0, init_height, screen_height);	//再将视口设置回当前窗口大小 反正帧缓冲到视口是满射
+
 	this->shader.use();
 	this->shader.setFloat("time", time);
 	this->shader.setInteger("chaos", this->chaos);
